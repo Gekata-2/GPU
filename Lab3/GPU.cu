@@ -17,14 +17,17 @@ __global__ void kernel__super_naive(float* A, float* B, float* C, int M, int N, 
 	int global_x = blockIdx.x * blockDim.x + threadIdx.x;
 	int global_y = blockIdx.y * blockDim.y + threadIdx.y;
 
+	float summ = 0;
 	for (int l = 0; l < N; l++)
 	{
 		//C[i * K + j] += A[i * N + l] * B[l * K + j];
 		// i = global_x;
 		// j = global_y;
 		// l = l;
-		C[global_x * K + global_y] += A[global_x * N + l] * B[l * K + global_y];
+		summ += A[global_x * N + l] * B[l * K + global_y];
+		
 	}
+	C[global_x * K + global_y] = summ;
 }
 
 float* GPUMultiSuperNaive(float* A, float* B, int M, int N, int K, std::vector<double>* times)
@@ -104,10 +107,12 @@ __global__ void kernel_naive_optimized(float* A, float* B, float* C, int M, int 
 	int global_x = blockIdx.x * blockDim.x + threadIdx.x;
 	int global_y = blockIdx.y * blockDim.y + threadIdx.y;
 
+	float summ = 0;
 	for (int l = 0; l < N; l++)
 	{
-		C[global_x * K + global_y] += A[l * M + global_x] * B[l * K + global_y];
+		summ += A[l * M + global_x] * B[l * K + global_y];
 	}
+	C[global_x * K + global_y] = summ;
 }
 
 float* GPUMultiNaiveOptimized(float* A, float* B, int M, int N, int K, std::vector<double>* times)
@@ -192,13 +197,11 @@ __global__ void kernel_optimized(float* A, float* B, float* C, int M, int N, int
 	int t_x = threadIdx.x;
 	int t_y = threadIdx.y;
 
+	int A_start = b_x * BLOCK_SIZE*N;
+	int B_start = b_y * BLOCK_SIZE*N;
 
-
-	int A_start = b_x * BLOCK_SIZE;
-	int B_start = b_y * BLOCK_SIZE;
-
-	int A_step = BLOCK_SIZE * M;
-	int B_step = BLOCK_SIZE * K;
+	int A_step = BLOCK_SIZE ;
+	int B_step = BLOCK_SIZE ;
 
 	int end = N;
 
@@ -207,8 +210,8 @@ __global__ void kernel_optimized(float* A, float* B, float* C, int M, int N, int
 	__shared__ float B_shared[BLOCK_SIZE][BLOCK_SIZE];
 	for (int i = A_start, j = B_start, k = 0; k < end; i += A_step, j += B_step, k += BLOCK_SIZE)
 	{
-		A_shared[t_x][t_y] = A[i + t_x * M + t_y];
-		B_shared[t_x][t_y] = B[j + t_x * K + t_y];
+		A_shared[t_x][t_y] = A[i + t_y * N + t_x];
+		B_shared[t_x][t_y] = B[j + t_y * N + t_x];
 
 		__syncthreads();
 		for (int l = 0; l < BLOCK_SIZE; l++)
@@ -221,7 +224,6 @@ __global__ void kernel_optimized(float* A, float* B, float* C, int M, int N, int
 	int block_C_start = b_x * K * BLOCK_SIZE + b_y * BLOCK_SIZE;
 	int idx = block_C_start + t_x * K + t_y;
 
-
 	C[idx] = sum;
 }
 
@@ -230,7 +232,7 @@ float* GPUMultiOptimized(float* A, float* B, int M, int N, int K, std::vector<do
 	cudaError_t error;
 
 	float* C = GenerateMatrixZeros(M, K);
-	T(A, M, N);
+	T(B, M, N);
 
 	float* A_gpu;
 	float* B_gpu;
@@ -292,7 +294,7 @@ float* GPUMultiOptimized(float* A, float* B, int M, int N, int K, std::vector<do
 	cudaFree(A_gpu);
 	cudaFree(B_gpu);
 	cudaFree(C_gpu);
-	T(A, M, N);
+	T(B, M, N);
 	
 	return C;
 }

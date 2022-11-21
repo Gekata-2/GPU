@@ -1,7 +1,1 @@
-﻿  Compiling CUDA source file Lab1.cu...
-  
-  E:\GPU\Lab1>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\bin\nvcc.exe" -gencode=arch=compute_30,code=\"sm_30,compute_30\" --use-local-env -ccbin "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64" -x cu  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\include"     --keep-dir x64\Release -maxrregcount=0  --machine 64 --compile -cudart static     -DNDEBUG -D_CONSOLE -D_UNICODE -DUNICODE -Xcompiler "/EHsc /W3 /nologo /O2 /Fdx64\Release\vc142.pdb /FS /Zi  /MD " -o x64\Release\Lab1.cu.obj "E:\GPU\Lab1\Lab1.cu" 
-  Lab1.cu
-E:/GPU/Lab1/Lab1.cu(37): warning C4244: =: преобразование "int" в "float", возможна потеря данных
-  LINK : указан параметр /LTCG, но не требуется создание кода; удалите /LTCG из командной строки компоновки для повышения производительности компоновщика
-  Lab1.vcxproj -> E:\GPU\Lab1\x64\Release\Lab1.exe
+﻿  Lab1.vcxproj -> E:\GPU\Lab1\x64\Release\Lab1.exe
